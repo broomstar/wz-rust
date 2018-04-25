@@ -1,0 +1,3 @@
+[submodule "libwz"]
+	path = libwz
+	url = https://github.com/xsoameix/wz
