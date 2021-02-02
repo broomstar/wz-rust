@@ -6,9 +6,10 @@ repository = "https://github.com/broomstar/wz-rust"
 description = "Native bindings to the libwz library"
 
 [dependencies]
-libz-sys = ">= 0"
 libc = "0.2"
+libz-sys = "1.1.2"
 
 [build-dependencies]
-cmake = "0.1.2"
-bindgen = "0.36.0"
+bindgen = "0.57.0"
+cc = { version = "1.0", features = ["parallel"] }
+
