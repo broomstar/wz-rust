@@ -1,15 +1,13 @@
 [package]
 name = "wz"
 version = "0.1.0"
-links = "wz"
 repository = "https://github.com/broomstar/wz-rust"
 description = "Native bindings to the libwz library"
+edition = "2018"
 
 [dependencies]
-libc = "0.2"
 libz-sys = "1.1.2"
 
 [build-dependencies]
 bindgen = "0.57.0"
-cc = { version = "1.0", features = ["parallel"] }
-
+cc = "1.0"
