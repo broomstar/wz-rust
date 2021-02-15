@@ -113,7 +113,18 @@ pub trait MapleNode {
     /// Get the vector of node with type [`Type::VEC`]
     fn get_vec(self) -> Option<(i32, i32)>;
 
+    fn get_img(self) -> Option<WzImage>;
+
     fn iter(self) -> Node<Self::Item>;
+}
+
+
+pub struct WzImage {
+    width: u32,
+    height: u32,
+    depth: u16,
+    scale: u8,
+    pixels: Vec<u8>,
 }
 
 impl MapleNode for *mut wznode {
@@ -255,6 +266,32 @@ impl MapleNode for *mut wznode {
         }
     }
 
+    fn get_img(self) -> Option<WzImage> {
+        unsafe {
+            let mut w: wz_uint32_t = 0;
+            let mut h: wz_uint32_t = 0;
+            let mut d: wz_uint16_t = 0;
+            let mut s: wz_uint8_t = 0;
+            let ret = wz_get_img(&mut w, &mut h, &mut d, &mut s, self);
+
+            if ret.is_null() {
+                return None;
+            }
+
+            let len = (w * h * 4) as usize;
+            let mut dst = Vec::with_capacity(len);
+            std::ptr::copy(ret, dst.as_mut_ptr(), len);
+
+            return Some(WzImage {
+                width: w,
+                height: h,
+                depth: d,
+                scale: s,
+                pixels: dst,
+            });
+        }
+    }
+
     fn iter(self) -> Node<*mut wznode> {
         match self.is_null() {
             false => Node { data: self, count: self.get_len() as i32 },
@@ -346,6 +383,13 @@ impl MapleNode for Option<*mut wznode> {
     fn get_vec(self) -> Option<(i32, i32)> {
         match self {
             Some(n) => n.get_vec(),
+            None => None,
+        }
+    }
+
+    fn get_img(self) -> Option<WzImage> {
+        match self {
+            Some(n) => n.get_img(),
             None => None,
         }
     }
