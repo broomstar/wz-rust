@@ -118,7 +118,6 @@ pub trait MapleNode {
     fn iter(self) -> Node<Self::Item>;
 }
 
-
 pub struct WzImage {
     width: u32,
     height: u32,
@@ -281,6 +280,7 @@ impl MapleNode for *mut wznode {
             let len = (w * h * 4) as usize;
             let mut dst = Vec::with_capacity(len);
             std::ptr::copy(ret, dst.as_mut_ptr(), len);
+            dst.set_len(len);
 
             return Some(WzImage {
                 width: w,
