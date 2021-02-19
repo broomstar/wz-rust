@@ -118,12 +118,13 @@ pub trait MapleNode {
     fn iter(self) -> Node<Self::Item>;
 }
 
+#[derive(Clone)]
 pub struct WzImage {
-    width: u32,
-    height: u32,
-    depth: u16,
-    scale: u8,
-    pixels: Vec<u8>,
+    pub width: u32,
+    pub height: u32,
+    pub depth: u16,
+    pub scale: u8,
+    pub pixels: Vec<u8>,
 }
 
 impl MapleNode for *mut wznode {
