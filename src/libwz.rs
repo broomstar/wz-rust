@@ -24,6 +24,15 @@ fn init_ctx() -> &'static Arc<Mutex<UnsafeSend<*mut wzctx>>> {
     })
 }
 
+pub fn get_root(path: &Path) -> &'static Arc<Mutex<UnsafeSend<*mut wznode>>> {
+    static INSTANCE: OnceCell<Arc<Mutex<UnsafeSend<*mut wznode>>>> = OnceCell::new();
+    INSTANCE.get_or_init(|| unsafe {
+        let ctx = wz_init_ctx();
+        let n = open_root(open_file(path).unwrap()).unwrap();
+        Arc::new(Mutex::new(UnsafeSend(n)))
+    })
+}
+
 /// open wz file with given path.
 pub fn open_file(path: &Path) -> Option<*mut wzfile> {
     let p = CString::new(path.to_str().unwrap()).expect("path");
