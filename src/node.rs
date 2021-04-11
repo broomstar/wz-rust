@@ -7,10 +7,7 @@ pub struct Node<T> {
 
 impl<T> Node<T> {
     pub fn new(data: T) -> Self {
-        Self {
-            data,
-            index: 0,
-        }
+        Self { data, index: 0 }
     }
 }
 

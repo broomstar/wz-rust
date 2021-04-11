@@ -2,41 +2,44 @@
 #![allow(non_camel_case_types)]
 #![allow(non_snake_case)]
 
-use std::sync::{Arc, Mutex};
-use once_cell::sync::OnceCell;
-use std::path::Path;
-use std::ffi::{CString, CStr};
+use crate::node::{MapleNode, Node, Type};
+use image::{DynamicImage, ImageBuffer};
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
-use image::{DynamicImage, ImageBuffer};
-use crate::node::{MapleNode, Type, Node};
+use once_cell::sync::OnceCell;
+use std::collections::HashMap;
+use std::ffi::{CStr, CString};
+use std::sync::{Arc, Mutex};
 include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
 
 pub struct UnsafeSend<T>(pub T);
 
 unsafe impl<T> Send for UnsafeSend<T> {}
 
-fn init_ctx() -> &'static Arc<Mutex<UnsafeSend<*mut wzctx>>> {
-    static INSTANCE: OnceCell<Arc<Mutex<UnsafeSend<*mut wzctx>>>> = OnceCell::new();
-    INSTANCE.get_or_init(|| unsafe {
+fn init_ctx(path: &'static str) -> *mut wzctx {
+    static INSTANCE: OnceCell<Arc<Mutex<HashMap<&str, UnsafeSend<*mut wzctx>>>>> = OnceCell::new();
+    let ins = INSTANCE.get_or_init(|| unsafe {
         let ctx = wz_init_ctx();
-        Arc::new(Mutex::new(UnsafeSend(ctx)))
-    })
+        let mut map = HashMap::new();
+        map.insert(path, UnsafeSend(ctx));
+        Arc::new(Mutex::new(map))
+    });
+    ins.lock().unwrap().get(path).unwrap().0
 }
 
-pub fn get_root(path: &Path) -> &'static Arc<Mutex<UnsafeSend<*mut wznode>>> {
+pub fn get_root(path: &'static str) -> &'static Arc<Mutex<UnsafeSend<*mut wznode>>> {
     static INSTANCE: OnceCell<Arc<Mutex<UnsafeSend<*mut wznode>>>> = OnceCell::new();
-    INSTANCE.get_or_init(|| unsafe {
+    INSTANCE.get_or_init(|| {
         let n = open_root(open_file(path).unwrap()).unwrap();
         Arc::new(Mutex::new(UnsafeSend(n)))
     })
 }
 
 /// open wz file with given path.
-pub fn open_file(path: &Path) -> Option<*mut wzfile> {
-    let p = CString::new(path.to_str().unwrap()).expect("path");
+pub fn open_file(path: &'static str) -> Option<*mut wzfile> {
+    let p = CString::new(path).expect("path");
     unsafe {
-        let f = wz_open_file(p.as_ptr(), init_ctx().lock().unwrap().0);
+        let f = wz_open_file(p.as_ptr(), init_ctx(path));
         match f.is_null() {
             false => Some(f),
             true => None,
@@ -212,7 +215,6 @@ impl MapleNode for *mut wznode {
             dst.set_len(len);
 
             ImageBuffer::from_raw(w, h, dst).map(DynamicImage::ImageBgra8)
-
 
             // return Some(DynamicImage {
             //     width: w,
