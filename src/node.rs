@@ -28,12 +28,12 @@ where
 
     #[inline]
     fn next(&mut self) -> Option<T> {
-        if self.index >= self.data.get_len() {
+        if self.index >= self.data.len() {
             return None;
         }
         let index = self.index;
         self.index = index + 1;
-        self.data.open_node_at(index)
+        self.data.child_at(index)
     }
 }
 
@@ -47,12 +47,12 @@ pub trait MapleNode {
     /// ```
     /// let file = open_file("Character.wz");
     /// let root = open_root(file);
-    /// if let Some(z_node) = root.open_node("Cape/01102169.img/shootF/2/cape/z") {
+    /// if let Some(z_node) = root.child("Cape/01102169.img/shootF/2/cape/z") {
     ///     println!("type={:?}", z_node);
     /// }
     ///
     /// ```
-    fn open_node(self, path: &str) -> Option<Self::Item>;
+    fn child(self, path: &str) -> Option<Self::Item>;
 
     /// Get the i th child wznode of wznode with given index i.
     /// Return [`None`] when no child or the wznode is not [`Type::ARY`] or [`Type::IMG`].
@@ -60,44 +60,44 @@ pub trait MapleNode {
     /// ```
     /// let file = open_file("Character.wz");
     /// let root = open_root(file);
-    /// if let Some(child) = root.open_node_at(0) {
+    /// if let Some(child) = root.child_at(0) {
     ///     println!("name={:?}", child.get_node_name());
     /// }
     ///
     /// ```
-    fn open_node_at(self, i: u32) -> Option<Self::Item>;
+    fn child_at(self, i: u32) -> Option<Self::Item>;
 
     /// Get the number of children of node
-    fn get_len(self) -> u32;
+    fn len(self) -> u32;
 
     /// get [`Type`] of node
-    fn get_type(self) -> Option<Type>;
+    fn ntype(self) -> Option<Type>;
 
     /// Get the i32 value of node with type [`Type::I16`] or [`Type::I32`]
-    fn get_i32(self) -> Option<i32>;
+    fn int32(self) -> Option<i32>;
 
     /// Get the i64 value of node with type [`Type::I64`]
-    fn get_i64(self) -> Option<i64>;
+    fn int64(self) -> Option<i64>;
 
     /// Get the f32 value of node with type [`Type::F32`]
-    fn get_f32(self) -> Option<f32>;
+    fn float32(self) -> Option<f32>;
 
     /// Get the f64 value of node with type [`Type::F64`]
-    fn get_f64(self) -> Option<f64>;
+    fn float64(self) -> Option<f64>;
 
     /// Get the str of node with type [`Type::STR`]
-    fn get_str(self) -> Option<&'static str>;
+    fn str(self) -> Option<&'static str>;
 
     /// Get the name of node
-    fn get_node_name(self) -> Option<&'static str>;
+    fn name(self) -> Option<&'static str>;
 
     /// Get the number of children of convex of node with type [`Type::VEX`].
-    fn get_vex_len(self) -> u32;
+    fn vex_len(self) -> u32;
 
     /// Get the vector of node with type [`Type::VEC`]
     fn get_vec(self) -> Option<(i32, i32)>;
 
-    fn get_img(self) -> Option<DynamicImage>;
+    fn img(self) -> Option<DynamicImage>;
 
     fn iter(self) -> Node<Self::Item>;
 }
