@@ -163,7 +163,7 @@ impl MapleNode for *mut wznode {
         }
     }
 
-    fn get_vec(self) -> Option<(i32, i32)> {
+    fn vec(self) -> Option<(i32, i32)> {
         unsafe {
             let mut x: wz_int32_t = 0;
             let mut y: wz_int32_t = 0;
@@ -289,9 +289,9 @@ impl MapleNode for Option<*mut wznode> {
         }
     }
 
-    fn get_vec(self) -> Option<(i32, i32)> {
+    fn vec(self) -> Option<(i32, i32)> {
         match self {
-            Some(n) => n.get_vec(),
+            Some(n) => n.vec(),
             None => None,
         }
     }

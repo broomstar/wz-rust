@@ -95,7 +95,7 @@ pub trait MapleNode {
     fn vex_len(self) -> u32;
 
     /// Get the vector of node with type [`Type::VEC`]
-    fn get_vec(self) -> Option<(i32, i32)>;
+    fn vec(self) -> Option<(i32, i32)>;
 
     fn img(self) -> Option<DynamicImage>;
 
