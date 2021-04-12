@@ -192,7 +192,7 @@ impl MapleNode for *mut wznode {
             std::ptr::copy(ret, dst.as_mut_ptr(), len);
             dst.set_len(len);
 
-            ImageBuffer::from_raw(w, h, dst).map(DynamicImage::ImageBgra8)
+            ImageBuffer::from_raw(w, h, dst).map(DynamicImage::ImageRgba8)
 
             // return Some(DynamicImage {
             //     width: w,
