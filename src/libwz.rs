@@ -2,7 +2,7 @@
 #![allow(non_camel_case_types)]
 #![allow(non_snake_case)]
 
-use crate::node::{MapleNode, Node, Type};
+use crate::node::{Dtype, MapleNode, Node};
 use image::{DynamicImage, ImageBuffer};
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
@@ -72,7 +72,7 @@ impl MapleNode for *mut wznode {
         }
     }
 
-    fn ntype(self) -> Option<Type> {
+    fn dtype(self) -> Option<Dtype> {
         unsafe {
             let wz_type = wz_get_type(self);
 
@@ -233,9 +233,9 @@ impl MapleNode for Option<*mut wznode> {
         }
     }
 
-    fn ntype(self) -> Option<Type> {
+    fn dtype(self) -> Option<Dtype> {
         match self {
-            Some(n) => n.ntype(),
+            Some(n) => n.dtype(),
             None => None,
         }
     }

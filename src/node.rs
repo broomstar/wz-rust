@@ -71,7 +71,7 @@ pub trait MapleNode {
     fn len(self) -> u32;
 
     /// get [`Type`] of node
-    fn ntype(self) -> Option<Type>;
+    fn dtype(self) -> Option<Dtype>;
 
     /// Get the i32 value of node with type [`Type::I16`] or [`Type::I32`]
     fn int32(self) -> Option<i32>;
@@ -104,7 +104,7 @@ pub trait MapleNode {
 
 #[repr(u16)]
 #[derive(PartialEq, Eq, Clone, Copy, Debug, FromPrimitive, ToPrimitive)]
-pub enum Type {
+pub enum Dtype {
     /// A node with nothing
     NIL = 0,
     /// A node with i16
