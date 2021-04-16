@@ -1,3 +1,4 @@
+use anyhow::Result;
 use image::DynamicImage;
 
 pub struct Node<T> {
@@ -13,7 +14,7 @@ impl<T> Node<T> {
 
 impl<T> From<T> for Node<T>
 where
-    T: MapleNode<Item = T> + Copy,
+    T: MapleNode<Item = T>,
 {
     fn from(n: T) -> Self {
         Node::new(n)
@@ -22,7 +23,7 @@ where
 
 impl<T> Iterator for Node<T>
 where
-    T: MapleNode<Item = T> + Copy,
+    T: MapleNode<Item = T>,
 {
     type Item = T;
 
@@ -52,7 +53,7 @@ pub trait MapleNode {
     /// }
     ///
     /// ```
-    fn child(self, path: &str) -> Option<Self::Item>;
+    fn child(&self, path: &str) -> Option<Self::Item>;
 
     /// Get the i th child wznode of wznode with given index i.
     /// Return [`None`] when no child or the wznode is not [`Type::ARY`] or [`Type::IMG`].
@@ -65,41 +66,41 @@ pub trait MapleNode {
     /// }
     ///
     /// ```
-    fn child_at(self, i: u32) -> Option<Self::Item>;
+    fn child_at(&self, i: u32) -> Option<Self::Item>;
 
     /// Get the number of children of node
-    fn len(self) -> u32;
+    fn len(&self) -> u32;
 
     /// get [`Type`] of node
-    fn dtype(self) -> Option<Dtype>;
+    fn dtype(&self) -> Result<Option<Dtype>>;
 
     /// Get the i32 value of node with type [`Type::I16`] or [`Type::I32`]
-    fn int32(self) -> Option<i32>;
+    fn int32(&self) -> Result<Option<i32>>;
 
     /// Get the i64 value of node with type [`Type::I64`]
-    fn int64(self) -> Option<i64>;
+    fn int64(&self) -> Result<Option<i64>>;
 
     /// Get the f32 value of node with type [`Type::F32`]
-    fn float32(self) -> Option<f32>;
+    fn float32(&self) -> Result<Option<f32>>;
 
     /// Get the f64 value of node with type [`Type::F64`]
-    fn float64(self) -> Option<f64>;
+    fn float64(&self) -> Result<Option<f64>>;
 
     /// Get the str of node with type [`Type::STR`]
-    fn str(self) -> Option<&'static str>;
+    fn str(&self) -> Result<Option<&'static str>>;
 
     /// Get the name of node
-    fn name(self) -> Option<&'static str>;
+    fn name(&self) -> Result<Option<&'static str>>;
 
     /// Get the number of children of convex of node with type [`Type::VEX`].
-    fn vex_len(self) -> u32;
+    fn vex_len(&self) -> Result<u32>;
 
     /// Get the vector of node with type [`Type::VEC`]
-    fn vec(self) -> Option<(i32, i32)>;
+    fn vec(&self) -> Result<Option<(i32, i32)>>;
 
-    fn img(self) -> Option<DynamicImage>;
+    fn img(&self) -> Result<Option<DynamicImage>>;
 
-    fn iter(self) -> Node<Self::Item>;
+    fn iter(&self) -> Node<Option<&Self::Item>>;
 }
 
 #[repr(u16)]
