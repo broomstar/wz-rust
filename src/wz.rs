@@ -237,7 +237,7 @@ impl MapleNode for WzNode {
     }
 }
 
-impl MapleNode for Option<WzNode> {
+impl MapleNode for Option<&WzNode> {
     type Item = WzNode;
 
     fn child(&self, path: &str) -> Option<Self::Item> {
