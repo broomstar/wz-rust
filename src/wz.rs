@@ -1,6 +1,6 @@
 use crate::node::{Dtype, MapleNode, Node};
-use anyhow::Result;
 use anyhow::bail;
+use anyhow::Result;
 use image::{DynamicImage, ImageBuffer};
 use num_traits::FromPrimitive;
 use std::ffi::{CStr, CString};
@@ -37,10 +37,16 @@ pub struct WzCtx {
 }
 
 impl WzCtx {
-    pub fn new(pointer: NonNull<wzctx>) -> Self {
-        WzCtx {
-            pointer,
-            marker: Default::default(),
+    pub fn new() -> Result<Self> {
+        let pointer = unsafe { wz_init_ctx() };
+
+        let pointer = NonNull::new(pointer);
+        match pointer {
+            Some(pointer) => Ok(WzCtx {
+                pointer,
+                marker: PhantomData::default(),
+            }),
+            None => bail!("new WzCtx failed!"),
         }
     }
 }
@@ -132,9 +138,7 @@ impl MapleNode for WzNode {
 
     fn int64(&self) -> Result<Option<i64>> {
         let mut val: wz_int64_t = 0;
-        let ret = unsafe {
-            wz_get_i64(&mut val, self.pointer.as_ptr())
-        };
+        let ret = unsafe { wz_get_i64(&mut val, self.pointer.as_ptr()) };
         if ret == 1 {
             bail!("get int64 error");
         }
