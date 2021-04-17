@@ -232,7 +232,7 @@ impl MapleNode for WzNode {
         }
     }
 
-    fn iter(&self) -> Node<Option<&WzNode>> {
+    fn iter(&self) -> Node<&WzNode> {
         Node::new(Some(&self))
     }
 }
@@ -322,7 +322,7 @@ impl MapleNode for Option<&WzNode> {
         }
     }
 
-    fn iter(&self) -> Node<Option<&WzNode>> {
+    fn iter(&self) -> Node<&WzNode> {
         match self {
             Some(n) => n.iter(),
             None => Node::new(None),

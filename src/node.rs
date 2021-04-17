@@ -2,12 +2,12 @@ use anyhow::Result;
 use image::DynamicImage;
 
 pub struct Node<T> {
-    data: T,
+    data: Option<T>,
     index: u32,
 }
 
 impl<T> Node<T> {
-    pub fn new(data: T) -> Self {
+    pub fn new(data: Option<T>) -> Self {
         Self { data, index: 0 }
     }
 }
@@ -17,7 +17,7 @@ where
     T: MapleNode<Item = T>,
 {
     fn from(n: T) -> Self {
-        Node::new(n)
+        Node::new(Some(n))
     }
 }
 
@@ -29,12 +29,15 @@ where
 
     #[inline]
     fn next(&mut self) -> Option<T> {
-        if self.index >= self.data.len() {
-            return None;
+        if let Some((data, len)) = self.data.as_ref().map(|data| (data, data.len())) {
+            if self.index >= len {
+                return None;
+            }
+            self.index = self.index + 1;
+            return data.child_at(self.index);
         }
-        let index = self.index;
-        self.index = index + 1;
-        self.data.child_at(index)
+
+        None
     }
 }
 
@@ -100,7 +103,7 @@ pub trait MapleNode {
 
     fn img(&self) -> Result<Option<DynamicImage>>;
 
-    fn iter(&self) -> Node<Option<&Self::Item>>;
+    fn iter(&self) -> Node<&Self::Item>;
 }
 
 #[repr(u16)]
