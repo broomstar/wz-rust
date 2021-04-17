@@ -11,13 +11,15 @@ use crate::c_wz::*;
 
 pub struct WzNode {
     pointer: NonNull<wznode>,
+    pub path: Option<String>,
     marker: PhantomData<*const wznode>,
 }
 
 impl WzNode {
-    pub fn new(pointer: NonNull<wznode>) -> Self {
+    pub fn new(pointer: NonNull<wznode>, path: &str) -> Self {
         WzNode {
             pointer,
+            path: Some(path.to_owned()),
             marker: Default::default(),
         }
     }
@@ -26,7 +28,8 @@ impl WzNode {
 impl Drop for WzNode {
     fn drop(&mut self) {
         unsafe {
-            wz_close_node(self.pointer.as_ptr());
+            //should not do this
+            // wz_close_node(self.pointer.as_ptr());
         }
     }
 }
@@ -95,7 +98,7 @@ pub fn open_file(path: &str, ctx: &WzCtx) -> Result<Option<WzFile>> {
 /// open root node with given wzfile.
 pub fn open_root(file: &WzFile) -> Result<Option<WzNode>> {
     let root = unsafe { wz_open_root(file.pointer.as_ptr()) };
-    Ok(NonNull::new(root).map(|root| WzNode::new(root)))
+    Ok(NonNull::new(root).map(|root| WzNode::new(root, "")))
 }
 
 impl<T: MapleNode> MapleNode for &T {
@@ -157,14 +160,32 @@ impl<T: MapleNode> MapleNode for &T {
 impl MapleNode for WzNode {
     type Item = WzNode;
     fn child(&self, path: &str) -> Option<Self::Item> {
+        let self_path = match &self.path {
+            Some(path) => &path,
+            None => "",
+        };
+        let child_path = &*format!("{}/{}", self_path, path);
         let path = CString::new(path).unwrap();
         let node = unsafe { wz_open_node(self.pointer.as_ptr(), path.as_ptr()) };
-        NonNull::new(node).map(|node| WzNode::new(node))
+        NonNull::new(node).map(|node| WzNode::new(node, child_path))
     }
 
     fn child_at(&self, i: u32) -> Option<Self::Item> {
+        let self_path = match &self.path {
+            Some(path) => &path,
+            None => "",
+        };
         let node = unsafe { wz_open_node_at(self.pointer.as_ptr(), i) };
-        NonNull::new(node).map(|node| WzNode::new(node))
+        NonNull::new(node).map(|node| {
+            let mut node = WzNode::new(node, "");
+            let node_name = match node.name() {
+                Ok(Some(node_name)) => node_name,
+                _ => "",
+            };
+            let child_path = format!("{}/{}", self_path, node_name);
+            node.path = Some(child_path);
+            node
+        })
     }
 
     fn len(&self) -> u32 {
