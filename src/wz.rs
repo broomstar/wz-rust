@@ -37,15 +37,15 @@ pub struct WzCtx {
 }
 
 impl WzCtx {
-    pub fn new() -> Result<Box<Self>> {
+    pub fn new() -> Result<Self> {
         let pointer = unsafe { wz_init_ctx() };
 
         let pointer = NonNull::new(pointer);
         match pointer {
-            Some(pointer) => Ok(Box::new(WzCtx {
+            Some(pointer) => Ok(WzCtx {
                 pointer,
                 marker: PhantomData::default(),
-            })),
+            }),
             None => bail!("new WzCtx failed!"),
         }
     }
@@ -53,8 +53,9 @@ impl WzCtx {
 
 impl Drop for WzCtx {
     fn drop(&mut self) {
+        dbg!();
         unsafe {
-            wz_free_ctx(self.pointer.as_ptr());
+            // wz_free_ctx(self.pointer.as_ptr());
         }
     }
 }
@@ -75,6 +76,8 @@ impl WzFile {
 
 impl Drop for WzFile {
     fn drop(&mut self) {
+        dbg!();
+
         unsafe {
             wz_close_file(self.pointer.as_ptr());
         }
@@ -289,7 +292,7 @@ impl MapleNode for WzNode {
     }
 }
 
-impl <T: MapleNode>MapleNode for Option<T> {
+impl<T: MapleNode> MapleNode for Option<T> {
     type Item = T::Item;
 
     fn child(&self, path: &str) -> Option<Self::Item> {
