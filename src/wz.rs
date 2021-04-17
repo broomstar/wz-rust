@@ -98,6 +98,66 @@ pub fn open_root(file: WzFile) -> Result<Option<WzNode>> {
     Ok(NonNull::new(root).map(|root| WzNode::new(root)))
 }
 
+impl<T: MapleNode> MapleNode for &T {
+    type Item = T::Item;
+
+    fn child(&self, path: &str) -> Option<Self::Item> {
+        (*self).child(path)
+    }
+
+    fn child_at(&self, i: u32) -> Option<Self::Item> {
+        (*self).child_at(i)
+    }
+
+    fn len(&self) -> u32 {
+        (*self).len()
+    }
+
+    fn dtype(&self) -> Result<Option<Dtype>> {
+        (*self).dtype()
+    }
+
+    fn int32(&self) -> Result<Option<i32>> {
+        (*self).int32()
+    }
+
+    fn int64(&self) -> Result<Option<i64>> {
+        (*self).int64()
+    }
+
+    fn float32(&self) -> Result<Option<f32>> {
+        (*self).float32()
+    }
+
+    fn float64(&self) -> Result<Option<f64>> {
+        (*self).float64()
+    }
+
+    fn str(&self) -> Result<Option<&'static str>> {
+        (*self).str()
+    }
+
+    fn name(&self) -> Result<Option<&'static str>> {
+        (*self).name()
+    }
+
+    fn vex_len(&self) -> Result<u32> {
+        (*self).vex_len()
+    }
+
+    fn vec(&self) -> Result<Option<(i32, i32)>> {
+        (*self).vec()
+    }
+
+    fn img(&self) -> Result<Option<DynamicImage>> {
+        (*self).img()
+    }
+
+    fn iter(&self) -> Node<&Self::Item> {
+        (*self).iter()
+    }
+}
+
 impl MapleNode for WzNode {
     type Item = WzNode;
     fn child(&self, path: &str) -> Option<Self::Item> {
@@ -237,8 +297,8 @@ impl MapleNode for WzNode {
     }
 }
 
-impl MapleNode for Option<WzNode> {
-    type Item = WzNode;
+impl <T: MapleNode>MapleNode for Option<T> {
+    type Item = T::Item;
 
     fn child(&self, path: &str) -> Option<Self::Item> {
         self.as_ref().map(|node| node.child(path)).unwrap_or(None)
@@ -322,100 +382,7 @@ impl MapleNode for Option<WzNode> {
         }
     }
 
-    fn iter(&self) -> Node<&WzNode> {
-        match self {
-            Some(n) => n.iter(),
-            None => Node::new(None),
-        }
-    }
-}
-
-impl MapleNode for Option<&WzNode> {
-    type Item = WzNode;
-
-    fn child(&self, path: &str) -> Option<Self::Item> {
-        self.as_ref().map(|node| node.child(path)).unwrap_or(None)
-    }
-
-    fn child_at(&self, i: u32) -> Option<Self::Item> {
-        self.as_ref().map(|node| node.child_at(i)).unwrap_or(None)
-    }
-
-    fn len(&self) -> u32 {
-        self.as_ref().map(|node| node.len()).unwrap_or(0)
-    }
-
-    fn dtype(&self) -> Result<Option<Dtype>> {
-        match self {
-            Some(n) => n.dtype(),
-            None => Ok(None),
-        }
-    }
-
-    fn int32(&self) -> Result<Option<i32>> {
-        match self {
-            Some(n) => n.int32(),
-            None => Ok(None),
-        }
-    }
-
-    fn int64(&self) -> Result<Option<i64>> {
-        match self {
-            Some(n) => n.int64(),
-            None => Ok(None),
-        }
-    }
-
-    fn float32(&self) -> Result<Option<f32>> {
-        match self {
-            Some(n) => n.float32(),
-            None => Ok(None),
-        }
-    }
-
-    fn float64(&self) -> Result<Option<f64>> {
-        match self {
-            Some(n) => n.float64(),
-            None => Ok(None),
-        }
-    }
-
-    fn str(&self) -> Result<Option<&'static str>> {
-        match self {
-            Some(n) => n.str(),
-            None => Ok(None),
-        }
-    }
-
-    fn name(&self) -> Result<Option<&'static str>> {
-        match self {
-            Some(n) => n.name(),
-            None => Ok(None),
-        }
-    }
-
-    fn vex_len(&self) -> Result<u32> {
-        match self {
-            Some(n) => n.vex_len(),
-            None => Ok(0),
-        }
-    }
-
-    fn vec(&self) -> Result<Option<(i32, i32)>> {
-        match self {
-            Some(n) => n.vec(),
-            None => Ok(None),
-        }
-    }
-
-    fn img(&self) -> Result<Option<DynamicImage>> {
-        match self {
-            Some(n) => n.img(),
-            None => Ok(None),
-        }
-    }
-
-    fn iter(&self) -> Node<&WzNode> {
+    fn iter(&self) -> Node<&Self::Item> {
         match self {
             Some(n) => n.iter(),
             None => Node::new(None),
