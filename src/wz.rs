@@ -53,9 +53,8 @@ impl WzCtx {
 
 impl Drop for WzCtx {
     fn drop(&mut self) {
-        dbg!();
         unsafe {
-            // wz_free_ctx(self.pointer.as_ptr());
+            wz_free_ctx(self.pointer.as_ptr());
         }
     }
 }
@@ -76,8 +75,6 @@ impl WzFile {
 
 impl Drop for WzFile {
     fn drop(&mut self) {
-        dbg!();
-
         unsafe {
             wz_close_file(self.pointer.as_ptr());
         }
