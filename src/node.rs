@@ -1,46 +1,6 @@
 use anyhow::Result;
 use image::DynamicImage;
 
-pub struct Node<T> {
-    data: Option<T>,
-    index: u32,
-}
-
-impl<T> Node<T> {
-    pub fn new(data: Option<T>) -> Self {
-        Self { data, index: 0 }
-    }
-}
-
-impl<T> From<T> for Node<T>
-where
-    T: MapleNode<Item = T>,
-{
-    fn from(n: T) -> Self {
-        Node::new(Some(n))
-    }
-}
-
-impl<T> Iterator for Node<T>
-where
-    T: MapleNode<Item = T>,
-{
-    type Item = T;
-
-    #[inline]
-    fn next(&mut self) -> Option<T> {
-        if let Some((data, len)) = self.data.as_ref().map(|data| (data, data.len())) {
-            if self.index >= len {
-                return None;
-            }
-            self.index = self.index + 1;
-            return data.child_at(self.index);
-        }
-
-        None
-    }
-}
-
 pub trait MapleNode {
     /// The type of the elements being opened.
     type Item;
@@ -102,8 +62,6 @@ pub trait MapleNode {
     fn vec(&self) -> Result<Option<(i32, i32)>>;
 
     fn img(&self) -> Result<Option<DynamicImage>>;
-
-    fn iter(&self) -> Node<&Self::Item>;
 }
 
 #[repr(u16)]

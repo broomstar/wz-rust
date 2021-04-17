@@ -1,4 +1,4 @@
-use crate::node::{Dtype, MapleNode, Node};
+use crate::node::{Dtype, MapleNode};
 use anyhow::bail;
 use anyhow::Result;
 use image::{DynamicImage, ImageBuffer};
@@ -152,10 +152,6 @@ impl<T: MapleNode> MapleNode for &T {
     fn img(&self) -> Result<Option<DynamicImage>> {
         (*self).img()
     }
-
-    fn iter(&self) -> Node<&Self::Item> {
-        (**self).iter()
-    }
 }
 
 impl MapleNode for WzNode {
@@ -291,10 +287,6 @@ impl MapleNode for WzNode {
             Ok(ImageBuffer::from_raw(w, h, dst).map(DynamicImage::ImageBgra8))
         }
     }
-
-    fn iter(&self) -> Node<&WzNode> {
-        Node::new(Some(&self))
-    }
 }
 
 impl <T: MapleNode>MapleNode for Option<T> {
@@ -379,13 +371,6 @@ impl <T: MapleNode>MapleNode for Option<T> {
         match self {
             Some(n) => n.img(),
             None => Ok(None),
-        }
-    }
-
-    fn iter(&self) -> Node<&Self::Item> {
-        match self {
-            Some(n) => n.iter(),
-            None => Node::new(None),
         }
     }
 }
