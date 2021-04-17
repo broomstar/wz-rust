@@ -154,7 +154,7 @@ impl<T: MapleNode> MapleNode for &T {
     }
 
     fn iter(&self) -> Node<&Self::Item> {
-        (*self).iter()
+        (**self).iter()
     }
 }
 
