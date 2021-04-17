@@ -86,14 +86,14 @@ pub struct UnsafeSend<T>(pub T);
 unsafe impl<T> Send for UnsafeSend<T> {}
 
 /// open wz file with given path.
-pub fn open_file(path: &str, ctx: WzCtx) -> Result<Option<WzFile>> {
+pub fn open_file(path: &str, ctx: &WzCtx) -> Result<Option<WzFile>> {
     let path = CString::new(path)?;
     let file = unsafe { wz_open_file(path.as_ptr(), ctx.pointer.as_ptr()) };
     Ok(NonNull::new(file).map(|f| WzFile::new(f)))
 }
 
 /// open root node with given wzfile.
-pub fn open_root(file: WzFile) -> Result<Option<WzNode>> {
+pub fn open_root(file: &WzFile) -> Result<Option<WzNode>> {
     let root = unsafe { wz_open_root(file.pointer.as_ptr()) };
     Ok(NonNull::new(root).map(|root| WzNode::new(root)))
 }
