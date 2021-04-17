@@ -37,15 +37,15 @@ pub struct WzCtx {
 }
 
 impl WzCtx {
-    pub fn new() -> Result<Self> {
+    pub fn new() -> Result<Box<Self>> {
         let pointer = unsafe { wz_init_ctx() };
 
         let pointer = NonNull::new(pointer);
         match pointer {
-            Some(pointer) => Ok(WzCtx {
+            Some(pointer) => Ok(Box::new(WzCtx {
                 pointer,
                 marker: PhantomData::default(),
-            }),
+            })),
             None => bail!("new WzCtx failed!"),
         }
     }
