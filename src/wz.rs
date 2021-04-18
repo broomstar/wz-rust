@@ -80,7 +80,7 @@ impl Debug for WzNode {
             }
         }
 
-        write!(
+        let _ = write!(
             f,
             "WzNode Path[{path}] Type[{dtype}] Value[{val}]",
             path = path,
