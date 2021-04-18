@@ -98,3 +98,24 @@ pub enum Dtype {
     /// a node with string (const char * utf8)
     STR = 13,
 }
+
+impl Dtype {
+    pub fn to_str(&self) -> &'static str {
+        match self {
+            Dtype::NIL => "NIL",
+            Dtype::I16 => "I16",
+            Dtype::I32 => "I32",
+            Dtype::I64 => "I64",
+            Dtype::F32 => "F32",
+            Dtype::F64 => "F64",
+            Dtype::VEC => "VEC",
+            Dtype::UNK => "UNK",
+            Dtype::ARY => "ARY",
+            Dtype::IMG => "IMG",
+            Dtype::VEX => "VEX",
+            Dtype::AO => "AO",
+            Dtype::UOL => "UOL",
+            Dtype::STR => "STR",
+        }
+    }
+}

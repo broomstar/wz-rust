@@ -8,6 +8,7 @@ use std::marker::PhantomData;
 use std::ptr::NonNull;
 
 use crate::c_wz::*;
+use std::fmt::{Debug, Formatter};
 
 pub struct WzNode {
     pointer: NonNull<wznode>,
@@ -25,6 +26,71 @@ impl WzNode {
     }
 }
 
+impl Debug for WzNode {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        let mut path = "".to_string();
+        if let Some(s) = self.path.as_ref() {
+            path = s.clone();
+        }
+        let mut dtype = "Error".to_string();
+        if let Ok(Some(t)) = self.dtype() {
+            dtype = t.to_str().to_owned();
+        }
+
+        let mut val = String::new();
+        if let Ok(Some(t)) = self.dtype() {
+            match t {
+                Dtype::NIL => {}
+                Dtype::I16 | Dtype::I32 => {
+                    if let Ok(Some(v)) = self.int32() {
+                        val = v.to_string();
+                    }
+                }
+                Dtype::I64 => {
+                    if let Ok(Some(v)) = self.int64() {
+                        val = v.to_string();
+                    }
+                }
+                Dtype::F32 => {
+                    if let Ok(Some(v)) = self.float32() {
+                        val = v.to_string();
+                    }
+                }
+                Dtype::F64 => {
+                    if let Ok(Some(v)) = self.float64() {
+                        val = v.to_string();
+                    }
+                }
+                Dtype::VEC => {
+                    if let Ok(Some((x, y))) = self.vec() {
+                        val = format!("vec(x={},y={})", x, y);
+                    }
+                }
+                Dtype::UNK => {}
+                Dtype::ARY => {}
+                Dtype::IMG => {}
+                Dtype::VEX => {}
+                Dtype::AO => {}
+                Dtype::UOL => {}
+                Dtype::STR => {
+                    if let Ok(Some(s)) = self.str() {
+                        val = s.to_string();
+                    }
+                }
+            }
+        }
+
+        write!(
+            f,
+            "WzNode Path[{path}] Type[{dtype}] Value[{val}]",
+            path = path,
+            dtype = dtype,
+            val = val
+        );
+        Ok(())
+    }
+}
+
 impl Drop for WzNode {
     fn drop(&mut self) {
         //should not do this
@@ -33,9 +99,9 @@ impl Drop for WzNode {
 }
 
 impl WzNode {
-    pub fn  iter<'a>(&self) -> WzNodeIter<'a> {
+    pub fn iter<'a>(&self) -> WzNodeIter<'a> {
         let n = WzNode {
-            pointer:  self.pointer,
+            pointer: self.pointer,
             path: self.path.clone(),
             marker: Default::default(),
         };
@@ -63,8 +129,8 @@ impl<'a> Iterator for WzNodeIter<'a> {
         if self.index >= self.base.len() {
             return None;
         }
-        self.index += 1;
         let child_node = self.base.child_at(self.index);
+        self.index += 1;
         match child_node {
             Some(n) => Some(Box::leak(Box::new(n))),
             None => None,
