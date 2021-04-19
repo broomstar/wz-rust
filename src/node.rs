@@ -2,65 +2,48 @@ use anyhow::Result;
 use image::DynamicImage;
 
 pub trait MapleNode {
-    /// The type of the elements being opened.
+    /// The type of the elements being indexed.
     type Item;
 
-    /// Get the wznode with given path.
+    /// Get child WzNode with given path.
     /// Return [`None`] when path not exists or error occurred.
-    /// # Examples
-    /// ```
-    /// let file = open_file("Character.wz");
-    /// let root = open_root(file);
-    /// if let Some(z_node) = root.child("Cape/01102169.img/shootF/2/cape/z") {
-    ///     println!("type={:?}", z_node);
-    /// }
-    ///
-    /// ```
     fn child(&self, path: &str) -> Option<Box<Self::Item>>;
 
-    /// Get the i th child wznode of wznode with given index i.
-    /// Return [`None`] when no child or the wznode is not [`Type::ARY`] or [`Type::IMG`].
-    /// # Examples
-    /// ```
-    /// let file = open_file("Character.wz");
-    /// let root = open_root(file);
-    /// if let Some(child) = root.child_at(0) {
-    ///     println!("name={:?}", child.get_node_name());
-    /// }
-    ///
-    /// ```
+    /// Get the i th child WzNode with given index i.
+    /// Return [`None`] when no child or the WzNode is not [`Dtype::ARY`] or [`Dtype::IMG`].
     fn child_at(&self, i: u32) -> Option<Box<Self::Item>>;
 
     /// Get the number of children of node
     fn len(&self) -> u32;
 
-    /// get [`Type`] of node
+    /// get [`Dtype`] of node
     fn dtype(&self) -> Result<Option<Dtype>>;
 
-    /// Get the i32 value of node with type [`Type::I16`] or [`Type::I32`]
+    /// Get the i32 value of node with type [`Dtype::I16`] or [`Dtype::I32`]
     fn int32(&self) -> Result<Option<i32>>;
 
-    /// Get the i64 value of node with type [`Type::I64`]
+    /// Get the i64 value of node with type [`Dtype::I64`]
     fn int64(&self) -> Result<Option<i64>>;
 
-    /// Get the f32 value of node with type [`Type::F32`]
+    /// Get the f32 value of node with type [`Dtype::F32`]
     fn float32(&self) -> Result<Option<f32>>;
 
-    /// Get the f64 value of node with type [`Type::F64`]
+    /// Get the f64 value of node with type [`Dtype::F64`]
     fn float64(&self) -> Result<Option<f64>>;
 
-    /// Get the str of node with type [`Type::STR`]
+    /// Get the str of node with type [`Dtype::STR`]
     fn str(&self) -> Result<Option<&'static str>>;
 
     /// Get the name of node
     fn name(&self) -> Result<Option<&'static str>>;
 
-    /// Get the number of children of convex of node with type [`Type::VEX`].
+    /// Get the number of children of convex of node with type [`Dtype::VEX`].
     fn vex_len(&self) -> Result<u32>;
 
-    /// Get the vector of node with type [`Type::VEC`]
+    /// Get the vector of node with type [`Dtype::VEC`]
     fn vec(&self) -> Result<Option<(i32, i32)>>;
 
+    /// Get the img of node with type[`Dtype::IMG`]
     fn img(&self) -> Result<Option<DynamicImage>>;
 }
 

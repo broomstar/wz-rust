@@ -13,11 +13,10 @@ fn main() {
 
     let mut cfg = cc::Build::new();
 
-    cfg.file("libwz/src/lib/aes256.c")
-        .file("libwz/src/byteorder.c")
-        .file("libwz/src/file.c")
-        .include("libwz/src")
-        .include("libwz/src/lib");
+    cfg.file("libwz/src/lib/aes256.c").file("libwz/src/file.c").include("libwz/src").include("libwz/src/lib");
+
+    #[cfg(target_os = "windows")]
+    cfg.file("libwz/src/byteorder.c");
 
     if let Some(include) = std::env::var_os("DEP_Z_INCLUDE") {
         cfg.include(include);
