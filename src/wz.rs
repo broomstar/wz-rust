@@ -116,6 +116,14 @@ pub struct WzNodeIter<'a> {
     index: u32,
 }
 
+impl<'a> Drop for WzNodeIter<'a> {
+    fn drop(&mut self) {
+        unsafe {
+            Box::from_raw(self.base as *const WzNode as *mut WzNode);
+        }
+    }
+}
+
 impl<'a> WzNodeIter<'a> {
     pub fn new(base: &'a WzNode) -> Self {
         Self { base, index: 0 }
@@ -208,11 +216,11 @@ pub fn open_root<'a>(file: &WzFile) -> Result<Option<&'a mut WzNode>> {
 impl<T: MapleNode> MapleNode for &mut T {
     type Item = T::Item;
 
-    fn child(&self, path: &str) -> Option<&mut Self::Item> {
+    fn child(&self, path: &str) -> Option<Box<Self::Item>> {
         (**self).child(path)
     }
 
-    fn child_at(&self, i: u32) -> Option<&mut Self::Item> {
+    fn child_at(&self, i: u32) -> Option<Box<Self::Item>> {
         (**self).child_at(i)
     }
 
@@ -263,7 +271,7 @@ impl<T: MapleNode> MapleNode for &mut T {
 
 impl MapleNode for WzNode {
     type Item = WzNode;
-    fn child(&self, path: &str) -> Option<&mut Self::Item> {
+    fn child(&self, path: &str) -> Option<Box<Self::Item>> {
         let self_path = match &self.path {
             Some(path) => &path,
             None => "",
@@ -271,10 +279,10 @@ impl MapleNode for WzNode {
         let child_path = &*format!("{}/{}", self_path, path);
         let path = CString::new(path).unwrap();
         let node = unsafe { wz_open_node(self.pointer.as_ptr(), path.as_ptr()) };
-        NonNull::new(node).map(|node| Box::leak(Box::new(WzNode::new(node, child_path))))
+        NonNull::new(node).map(|node| Box::new(WzNode::new(node, child_path)))
     }
 
-    fn child_at(&self, i: u32) -> Option<&mut Self::Item> {
+    fn child_at(&self, i: u32) -> Option<Box<Self::Item>> {
         let self_path = match &self.path {
             Some(path) => &path,
             None => "",
@@ -288,7 +296,7 @@ impl MapleNode for WzNode {
             };
             let child_path = format!("{}/{}", self_path, node_name);
             node.path = Some(child_path);
-            Box::leak(Box::new(node))
+            Box::new(node)
         })
     }
 
@@ -414,14 +422,14 @@ impl MapleNode for WzNode {
     }
 }
 
-impl<T: MapleNode> MapleNode for Option<T> {
+impl<T: MapleNode> MapleNode for Option<Box<T>> {
     type Item = T::Item;
 
-    fn child(&self, path: &str) -> Option<&mut Self::Item> {
+    fn child(&self, path: &str) -> Option<Box<Self::Item>> {
         self.as_ref().map(|node| node.child(path)).unwrap_or(None)
     }
 
-    fn child_at(&self, i: u32) -> Option<&mut Self::Item> {
+    fn child_at(&self, i: u32) -> Option<Box<Self::Item>> {
         self.as_ref().map(|node| node.child_at(i)).unwrap_or(None)
     }
 

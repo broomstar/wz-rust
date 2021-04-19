@@ -16,7 +16,7 @@ pub trait MapleNode {
     /// }
     ///
     /// ```
-    fn child(&self, path: &str) -> Option<&mut Self::Item>;
+    fn child(&self, path: &str) -> Option<Box<Self::Item>>;
 
     /// Get the i th child wznode of wznode with given index i.
     /// Return [`None`] when no child or the wznode is not [`Type::ARY`] or [`Type::IMG`].
@@ -29,7 +29,7 @@ pub trait MapleNode {
     /// }
     ///
     /// ```
-    fn child_at(&self, i: u32) -> Option<&mut Self::Item>;
+    fn child_at(&self, i: u32) -> Option<Box<Self::Item>>;
 
     /// Get the number of children of node
     fn len(&self) -> u32;
