@@ -1,11 +1,12 @@
 use crate::node::{Dtype, MapleNode};
-use anyhow::bail;
-use anyhow::Result;
+use anyhow::{bail, Result};
 use image::{DynamicImage, ImageBuffer};
 use num_traits::FromPrimitive;
-use std::ffi::{CStr, CString};
-use std::marker::PhantomData;
-use std::ptr::NonNull;
+use std::{
+    ffi::{CStr, CString},
+    marker::PhantomData,
+    ptr::NonNull,
+};
 
 use crate::c_wz::*;
 use std::fmt::{Debug, Formatter};
@@ -18,11 +19,7 @@ pub struct WzNode {
 
 impl WzNode {
     pub fn new(pointer: NonNull<wznode>, path: &str) -> Self {
-        WzNode {
-            pointer,
-            path: Some(path.to_owned()),
-            marker: Default::default(),
-        }
+        WzNode { pointer, path: Some(path.to_owned()), marker: Default::default() }
     }
 }
 
@@ -80,13 +77,7 @@ impl Debug for WzNode {
             }
         }
 
-        let _ = write!(
-            f,
-            "WzNode Path[{path}] Type[{dtype}] Value[{val}]",
-            path = path,
-            dtype = dtype,
-            val = val
-        );
+        let _ = write!(f, "WzNode Path[{path}] Type[{dtype}] Value[{val}]", path = path, dtype = dtype, val = val);
         Ok(())
     }
 }
@@ -100,11 +91,7 @@ impl Drop for WzNode {
 
 impl WzNode {
     pub fn iter<'a>(&self) -> WzNodeIter<'a> {
-        let n = WzNode {
-            pointer: self.pointer,
-            path: self.path.clone(),
-            marker: Default::default(),
-        };
+        let n = WzNode { pointer: self.pointer, path: self.path.clone(), marker: Default::default() };
 
         let a = Box::leak(Box::new(n));
         WzNodeIter::new(a)
@@ -157,10 +144,7 @@ impl WzCtx {
 
         let pointer = NonNull::new(pointer);
         match pointer {
-            Some(pointer) => Ok(WzCtx {
-                pointer,
-                marker: PhantomData::default(),
-            }),
+            Some(pointer) => Ok(WzCtx { pointer, marker: PhantomData::default() }),
             None => bail!("new WzCtx failed!"),
         }
     }
@@ -181,10 +165,7 @@ pub struct WzFile {
 
 impl WzFile {
     pub fn new(pointer: NonNull<wzfile>) -> Self {
-        WzFile {
-            pointer,
-            marker: Default::default(),
-        }
+        WzFile { pointer, marker: Default::default() }
     }
 }
 
@@ -271,6 +252,7 @@ impl<T: MapleNode> MapleNode for &mut T {
 
 impl MapleNode for WzNode {
     type Item = WzNode;
+
     fn child(&self, path: &str) -> Option<Box<Self::Item>> {
         let self_path = match &self.path {
             Some(path) => &path,
