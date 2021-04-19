@@ -114,7 +114,7 @@ impl<'a> WzNodeIter<'a> {
 }
 
 impl<'a> Iterator for WzNodeIter<'a> {
-    type Item = &'a WzNode;
+    type Item = Box<WzNode>;
 
     fn next(&mut self) -> Option<Self::Item> {
         if self.index >= self.base.len() {
@@ -123,7 +123,7 @@ impl<'a> Iterator for WzNodeIter<'a> {
         let child_node = self.base.child_at(self.index);
         self.index += 1;
         match child_node {
-            Some(n) => Some(Box::leak(Box::new(n))),
+            Some(n) => Some(n),
             None => None,
         }
     }
@@ -153,7 +153,12 @@ impl WzCtx {
 }
 
 impl Drop for WzCtx {
+
     fn drop(&mut self) {
+        let x = &mut [1, 2, 4];
+for elem in x.iter_mut() {
+    *elem += 2;
+}
         unsafe {
             wz_free_ctx(self.pointer.as_ptr());
         }
