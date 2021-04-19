@@ -21,6 +21,12 @@ impl WzNode {
     pub fn new(pointer: NonNull<wznode>, path: &str) -> Self {
         WzNode { pointer, path: Some(path.to_owned()), marker: Default::default() }
     }
+
+    pub fn shrink(&self) {
+        unsafe {
+            wz_close_node(self.pointer.as_ptr());
+        }
+    }
 }
 
 impl Debug for WzNode {
@@ -82,19 +88,9 @@ impl Debug for WzNode {
     }
 }
 
-impl Drop for WzNode {
-    fn drop(&mut self) {
-        //should not do this
-        // wz_close_node(self.pointer.as_ptr());
-    }
-}
-
 impl WzNode {
-    pub fn iter<'a>(&self) -> WzNodeIter<'a> {
-        let n = WzNode { pointer: self.pointer, path: self.path.clone(), marker: Default::default() };
-
-        let a = Box::leak(Box::new(n));
-        WzNodeIter::new(a)
+    pub fn iter(&self) -> WzNodeIter<'_> {
+        WzNodeIter::new(self)
     }
 }
 
@@ -141,12 +137,18 @@ pub struct WzCtx {
 impl WzCtx {
     pub fn new() -> Result<Self> {
         let pointer = unsafe { wz_init_ctx() };
-
         let pointer = NonNull::new(pointer);
         match pointer {
             Some(pointer) => Ok(WzCtx { pointer, marker: PhantomData::default() }),
             None => bail!("new WzCtx failed!"),
         }
+    }
+
+    /// open wz file with given path.
+    pub fn open_file(&self, path: &str) -> Result<Option<WzFile>> {
+        let path = CString::new(path)?;
+        let file = unsafe { wz_open_file(path.as_ptr(), self.pointer.as_ptr()) };
+        Ok(NonNull::new(file).map(|f| WzFile::new(f)))
     }
 }
 
@@ -167,6 +169,12 @@ impl WzFile {
     pub fn new(pointer: NonNull<wzfile>) -> Self {
         WzFile { pointer, marker: Default::default() }
     }
+
+    /// open root node with given wzfile.
+    pub fn open_root<'a>(&self) -> Result<Option<&'a mut WzNode>> {
+        let root = unsafe { wz_open_root(self.pointer.as_ptr()) };
+        Ok(NonNull::new(root).map(|root| Box::leak(Box::new(WzNode::new(root, "")))))
+    }
 }
 
 impl Drop for WzFile {
@@ -180,19 +188,6 @@ impl Drop for WzFile {
 pub struct UnsafeSend<T>(pub T);
 
 unsafe impl<T> Send for UnsafeSend<T> {}
-
-/// open wz file with given path.
-pub fn open_file<'a>(path: &str, ctx: &WzCtx) -> Result<Option<WzFile>> {
-    let path = CString::new(path)?;
-    let file = unsafe { wz_open_file(path.as_ptr(), ctx.pointer.as_ptr()) };
-    Ok(NonNull::new(file).map(|f| WzFile::new(f)))
-}
-
-/// open root node with given wzfile.
-pub fn open_root<'a>(file: &WzFile) -> Result<Option<&'a mut WzNode>> {
-    let root = unsafe { wz_open_root(file.pointer.as_ptr()) };
-    Ok(NonNull::new(root).map(|root| Box::leak(Box::new(WzNode::new(root, "")))))
-}
 
 impl<T: MapleNode> MapleNode for &mut T {
     type Item = T::Item;
