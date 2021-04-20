@@ -1,15 +1,16 @@
-use crate::node::{Dtype, MapleNode};
+use crate::{
+    c_wz::*,
+    node::{Dtype, MapleNode},
+};
 use anyhow::{bail, Result};
 use image::{DynamicImage, ImageBuffer};
 use num_traits::FromPrimitive;
 use std::{
     ffi::{CStr, CString},
+    fmt::{Debug, Formatter},
     marker::PhantomData,
     ptr::NonNull,
 };
-
-use crate::c_wz::*;
-use std::fmt::{Debug, Formatter};
 
 pub struct WzNode {
     pointer: NonNull<wznode>,
@@ -145,12 +146,11 @@ impl WzCtx {
 }
 
 impl Drop for WzCtx {
-
     fn drop(&mut self) {
         let x = &mut [1, 2, 4];
-for elem in x.iter_mut() {
-    *elem += 2;
-}
+        for elem in x.iter_mut() {
+            *elem += 2;
+        }
         unsafe {
             wz_free_ctx(self.pointer.as_ptr());
         }
@@ -168,9 +168,9 @@ impl WzFile {
     }
 
     /// open root node with given wzfile.
-    pub fn open_root<'a>(&self) -> Result<Option<&'a mut WzNode>> {
+    pub fn open_root<'a>(&self) -> Result<Option<Box<WzNode>>> {
         let root = unsafe { wz_open_root(self.pointer.as_ptr()) };
-        Ok(NonNull::new(root).map(|root| Box::leak(Box::new(WzNode::new(root, "")))))
+        Ok(NonNull::new(root).map(|root| Box::new(WzNode::new(root, ""))))
     }
 }
 
