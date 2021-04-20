@@ -99,14 +99,6 @@ pub struct WzNodeIter<'a> {
     index: u32,
 }
 
-impl<'a> Drop for WzNodeIter<'a> {
-    fn drop(&mut self) {
-        unsafe {
-            Box::from_raw(self.base as *const WzNode as *mut WzNode);
-        }
-    }
-}
-
 impl<'a> WzNodeIter<'a> {
     pub fn new(base: &'a WzNode) -> Self {
         Self { base, index: 0 }
