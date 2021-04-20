@@ -3,7 +3,7 @@ use crate::{
     node::{Dtype, MapleNode},
 };
 use anyhow::{bail, Result};
-use image::{DynamicImage, ImageBuffer};
+use image::{DynamicImage, GenericImageView, ImageBuffer};
 use num_traits::FromPrimitive;
 use std::{
     ffi::{CStr, CString},
@@ -71,8 +71,14 @@ impl Debug for WzNode {
                     }
                 }
                 Dtype::UNK => {}
-                Dtype::ARY => {}
-                Dtype::IMG => {}
+                Dtype::ARY => {
+                    val = format!("child num={}", self.len());
+                }
+                Dtype::IMG => {
+                    if let Ok(Some(image)) = self.img() {
+                        val = format!("dim:{}x{},child num={}", image.width(), image.height(), self.len());
+                    }
+                }
                 Dtype::VEX => {}
                 Dtype::AO => {}
                 Dtype::UOL => {}
