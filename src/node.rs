@@ -7,7 +7,7 @@ pub trait MapleNode {
 
     /// Get child WzNode with given path.
     /// Return [`None`] when path not exists or error occurred.
-    fn child(&self, path: &str) -> Option<Box<Self::Item>>;
+    fn child<S: AsRef<str>>(&self, path: S) -> Option<Box<Self::Item>>;
 
     /// Get the i th child WzNode with given index i.
     /// Return [`None`] when no child or the WzNode is not [`Dtype::ARY`] or [`Dtype::IMG`].

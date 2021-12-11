@@ -153,10 +153,6 @@ impl WzCtx {
 
 impl Drop for WzCtx {
     fn drop(&mut self) {
-        let x = &mut [1, 2, 4];
-        for elem in x.iter_mut() {
-            *elem += 2;
-        }
         unsafe {
             wz_free_ctx(self.pointer.as_ptr());
         }
@@ -195,7 +191,7 @@ unsafe impl<T> Send for UnsafeSend<T> {}
 impl<T: MapleNode> MapleNode for &mut T {
     type Item = T::Item;
 
-    fn child(&self, path: &str) -> Option<Box<Self::Item>> {
+    fn child<S: AsRef<str>>(&self, path: S) -> Option<Box<Self::Item>> {
         (**self).child(path)
     }
 
@@ -251,13 +247,13 @@ impl<T: MapleNode> MapleNode for &mut T {
 impl MapleNode for WzNode {
     type Item = WzNode;
 
-    fn child(&self, path: &str) -> Option<Box<Self::Item>> {
+    fn child<S: AsRef<str>>(&self, path: S) -> Option<Box<Self::Item>> {
         let self_path = match &self.path {
             Some(path) => &path,
             None => "",
         };
-        let child_path = &*format!("{}/{}", self_path, path);
-        let path = CString::new(path).unwrap();
+        let child_path = &*format!("{}/{}", self_path, path.as_ref());
+        let path = CString::new(path.as_ref()).unwrap();
         let node = unsafe { wz_open_node(self.pointer.as_ptr(), path.as_ptr()) };
         NonNull::new(node).map(|node| Box::new(WzNode::new(node, child_path)))
     }
@@ -405,7 +401,7 @@ impl MapleNode for WzNode {
 impl<T: MapleNode> MapleNode for Option<Box<T>> {
     type Item = T::Item;
 
-    fn child(&self, path: &str) -> Option<Box<Self::Item>> {
+    fn child<S: AsRef<str>>(&self, path: S) -> Option<Box<Self::Item>> {
         self.as_ref().map(|node| node.child(path)).unwrap_or(None)
     }
 
