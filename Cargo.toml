@@ -6,12 +6,13 @@ description = "Native bindings to the libwz library"
 edition = "2018"
 
 [dependencies]
-libz-sys = "1.1.2"
-num-traits = "0.2.14"
+libz-sys = "1.1.8"
+num-traits = "0.2.15"
 num-derive = "0.3.3"
 image = "0.23.14"
-anyhow = "1.0.40"
+anyhow = "1.0.66"
+glam = "0.22"
 
 [build-dependencies]
 bindgen = "0.58.1"
-cc = "1.0.67"
+cc = "1.0.77"

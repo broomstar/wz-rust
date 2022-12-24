@@ -22,12 +22,6 @@ impl WzNode {
     pub fn new(pointer: NonNull<wznode>, path: &str) -> Self {
         WzNode { pointer, path: Some(path.to_owned()), marker: Default::default() }
     }
-
-    pub fn shrink(&self) {
-        unsafe {
-            wz_close_node(self.pointer.as_ptr());
-        }
-    }
 }
 
 impl Debug for WzNode {
@@ -66,8 +60,8 @@ impl Debug for WzNode {
                     }
                 }
                 Dtype::VEC => {
-                    if let Ok(Some((x, y))) = self.vec() {
-                        val = format!("vec(x={},y={})", x, y);
+                    if let Ok(Some(v)) = self.vec() {
+                        val = format!("vec({})", v);
                     }
                 }
                 Dtype::UNK => {}
@@ -121,10 +115,7 @@ impl<'a> Iterator for WzNodeIter<'a> {
         }
         let child_node = self.base.child_at(self.index);
         self.index += 1;
-        match child_node {
-            Some(n) => Some(n),
-            None => None,
-        }
+        child_node
     }
 }
 
@@ -235,7 +226,7 @@ impl<T: MapleNode> MapleNode for &mut T {
         (**self).vex_len()
     }
 
-    fn vec(&self) -> Result<Option<(i32, i32)>> {
+    fn vec(&self) -> Result<Option<glam::Vec2>> {
         (**self).vec()
     }
 
@@ -364,7 +355,7 @@ impl MapleNode for WzNode {
         }
     }
 
-    fn vec(&self) -> Result<Option<(i32, i32)>> {
+    fn vec(&self) -> Result<Option<glam::Vec2>> {
         unsafe {
             let mut x: wz_int32_t = 0;
             let mut y: wz_int32_t = 0;
@@ -372,7 +363,7 @@ impl MapleNode for WzNode {
             if ret == 1 {
                 bail!("vec() failed");
             }
-            Ok(Some((x, y)))
+            Ok(Some(glam::Vec2::new(x as f32, y as f32)))
         }
     }
 
@@ -469,7 +460,7 @@ impl<T: MapleNode> MapleNode for Option<Box<T>> {
         }
     }
 
-    fn vec(&self) -> Result<Option<(i32, i32)>> {
+    fn vec(&self) -> Result<Option<glam::Vec2>> {
         match self {
             Some(n) => n.vec(),
             None => Ok(None),

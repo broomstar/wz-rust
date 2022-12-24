@@ -41,7 +41,7 @@ pub trait MapleNode {
     fn vex_len(&self) -> Result<u32>;
 
     /// Get the vector of node with type [`Dtype::VEC`]
-    fn vec(&self) -> Result<Option<(i32, i32)>>;
+    fn vec(&self) -> Result<Option<glam::Vec2>>;
 
     /// Get the img of node with type[`Dtype::IMG`]
     fn img(&self) -> Result<Option<DynamicImage>>;
