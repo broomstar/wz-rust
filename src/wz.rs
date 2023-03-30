@@ -1,9 +1,8 @@
 use crate::{
     c_wz::*,
-    node::{Dtype, MapleNode},
+    node::{Dtype, ImageBuffer, MapleNode},
 };
 use anyhow::{bail, Result};
-use image::{DynamicImage, GenericImageView, ImageBuffer};
 use num_traits::FromPrimitive;
 use std::{
     ffi::{CStr, CString},
@@ -69,8 +68,8 @@ impl Debug for WzNode {
                     val = format!("child num={}", self.len());
                 }
                 Dtype::IMG => {
-                    if let Ok(Some(image)) = self.img() {
-                        val = format!("dim:{}x{},child num={}", image.width(), image.height(), self.len());
+                    if let Ok(Some(p)) = self.img() {
+                        val = format!("dim:{}x{},child num={}", p.width, p.height, self.len());
                     }
                 }
                 Dtype::VEX => {}
@@ -230,7 +229,7 @@ impl<T: MapleNode> MapleNode for &mut T {
         (**self).vec()
     }
 
-    fn img(&self) -> Result<Option<DynamicImage>> {
+    fn img<'a>(&self) -> Result<Option<ImageBuffer<'a>>> {
         (**self).img()
     }
 }
@@ -367,24 +366,19 @@ impl MapleNode for WzNode {
         }
     }
 
-    fn img(&self) -> Result<Option<DynamicImage>> {
+    fn img<'a>(&self) -> Result<Option<ImageBuffer<'a>>> {
         unsafe {
             let mut w: wz_uint32_t = 0;
             let mut h: wz_uint32_t = 0;
             let mut d: wz_uint16_t = 0;
             let mut s: wz_uint8_t = 0;
             let ret = wz_get_img(&mut w, &mut h, &mut d, &mut s, self.pointer.as_ptr());
-
             if ret.is_null() {
                 bail!("img() failed");
             }
-
             let len = (w * h * 4) as usize;
-            let mut dst = Vec::with_capacity(len);
-            std::ptr::copy(ret, dst.as_mut_ptr(), len);
-            dst.set_len(len);
-
-            Ok(ImageBuffer::from_raw(w, h, dst).map(DynamicImage::ImageBgra8))
+            let data: &'a mut [u8] = std::slice::from_raw_parts_mut(ret, len);
+            Ok(Some(ImageBuffer { width: w, height: h, depth: d, scale: s, data }))
         }
     }
 }
@@ -467,7 +461,7 @@ impl<T: MapleNode> MapleNode for Option<Box<T>> {
         }
     }
 
-    fn img(&self) -> Result<Option<DynamicImage>> {
+    fn img<'a>(&self) -> Result<Option<ImageBuffer<'a>>> {
         match self {
             Some(n) => n.img(),
             None => Ok(None),

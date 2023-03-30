@@ -1,5 +1,4 @@
 use anyhow::Result;
-use image::DynamicImage;
 
 pub trait MapleNode {
     /// The type of the elements being indexed.
@@ -44,7 +43,16 @@ pub trait MapleNode {
     fn vec(&self) -> Result<Option<glam::Vec2>>;
 
     /// Get the img of node with type[`Dtype::IMG`]
-    fn img(&self) -> Result<Option<DynamicImage>>;
+    // fn img(&self) -> Result<Option<DynamicImage>>;
+    fn img<'a>(&self) -> Result<Option<ImageBuffer<'a>>>;
+}
+
+pub struct ImageBuffer<'a> {
+    pub data: &'a mut [u8],
+    pub width: u32,
+    pub height: u32,
+    pub depth: u16,
+    pub scale: u8,
 }
 
 #[repr(u16)]
